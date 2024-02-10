@@ -19,7 +19,7 @@ const processRequest = (request, response, content, acceptedTypes, statusCode) =
     msgXML += '</response>';
     return respond(request, response, msgXML, 'text/xml', statusCode);
   }
-
+  
   //prints out json
   const msgString = JSON.stringify(content);
   return respond(request, response, msgString, 'application/json', statusCode);
