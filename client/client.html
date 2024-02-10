@@ -5,7 +5,90 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script>
+    //Handle response method, takes in a response
+    const handleResponse = async (response) => {
+      const content = document.querySelector('#content');
 
+      //Switch statement that determines what the response's status is
+      //And prints out the corrent thing to the content box
+      switch(response.status) {
+        case 200: //success
+          content.innerHTML = '<b>Success</b>';
+          break;
+        case 400: //bad request
+          content.innerHTML = '<b>Bad Request</b>';
+          break;
+        case 401: //unauthorized
+          content.innerHTML = '<b>Unauthorized</b>';
+          break;
+        case 403: //forbidden
+          content.innerHTML = '<b>Forbidden</b>';
+          break;
+        case 500: //internal
+          content.innerHTML = '<b>Internal Server Error</b>';
+          break;
+        case 501: //not implemented
+          content.innerHTML = '<b>Not Implemented</b>';
+          break;
+        default: //resource not found (404)
+          content.innerHTML = '<b>Resource Not Found</b>';
+          break;
+      }
+
+      //Retrieves the raw data of the response and prints it out
+      let rawData = await response.text();
+      console.log(rawData);
+
+      const p = document.createElement('p');
+
+      //Gets the content type of the response and prints out the message accordingly
+      const contentType = response.headers.get('Content-Type');
+      if(contentType === 'text/xml') {
+        const parsedResponse = new window.DOMParser().parseFromString(rawData, 'text/xml');
+        p.textContent = 'Message: ' + parsedResponse.querySelector('message').textContent;
+      } else {
+        const parsedResponse = JSON.parse(rawData);
+        p.textContent = `Message: ${parsedResponse.message}`;
+      }
+
+      content.appendChild(p);
+    };
+
+    //Takes in a url and type of file, sets options using the type
+    //and fetches using the url and the options. Sends the returned response
+    //to handle response.
+    const sendFetchRequest = async (url, acceptedType) => {
+      const options = {
+        method: 'GET',
+        headers: {'Accept': acceptedType},
+      };
+
+      let response = await fetch(url, options);
+
+      handleResponse(response);
+    };
+
+    //Init function
+    const init = () => {
+      const sendButton = document.querySelector("#send");
+
+      //Method that will be called upon clicking the send button
+      //Gets the currently selected page and type and passes their
+      //values to sendFetchRequest
+      const sendRequest = () => {
+        const selectPage = document.querySelector("#page");
+        const selectType = document.querySelector("#type");
+
+        const selectedPage = selectPage.options[selectPage.selectedIndex];
+        const selectedType = selectType.options[selectType.selectedIndex];
+        
+        sendFetchRequest(selectedPage.value, selectedType.value);
+      };
+
+      sendButton.addEventListener('click', sendRequest);
+    };
+
+    window.onload = init;
   </script>
 </head>
 <body>
